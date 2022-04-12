@@ -32,6 +32,10 @@ const listBetween string = `
 SELECT * FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
 `
 
+const deleteNote string = `
+DELETE FROM notes WHERE id = ?
+`
+
 //go:generate mockgen -destination=mock_sql/mock.go -package=mock_sql -source=sqlite.go
 
 type sqliteDBConn interface {
@@ -129,6 +133,15 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 	}
 
 	return retNotes, nil
+}
+
+func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
+	_, err := repo.dbConn.Exec(deleteNote, noteID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func touchDBFile(filename string) error {

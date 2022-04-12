@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	entities "note-logger/internal/entities"
 	reflect "reflect"
+	time "time"
 )
 
 // MockRepository is a mock of Repository interface
@@ -47,4 +48,33 @@ func (m *MockRepository) Create(ctx context.Context, note *entities.Note) (*enti
 func (mr *MockRepositoryMockRecorder) Create(ctx, note interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), ctx, note)
+}
+
+// ListBetween mocks base method
+func (m *MockRepository) ListBetween(ctx context.Context, startTime, endTime time.Time) ([]*entities.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBetween", ctx, startTime, endTime)
+	ret0, _ := ret[0].([]*entities.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBetween indicates an expected call of ListBetween
+func (mr *MockRepositoryMockRecorder) ListBetween(ctx, startTime, endTime interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBetween", reflect.TypeOf((*MockRepository)(nil).ListBetween), ctx, startTime, endTime)
+}
+
+// Delete mocks base method
+func (m *MockRepository) Delete(ctx context.Context, noteID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockRepositoryMockRecorder) Delete(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), ctx, noteID)
 }

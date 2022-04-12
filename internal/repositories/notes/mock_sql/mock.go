@@ -52,3 +52,23 @@ func (mr *MocksqliteDBConnMockRecorder) Exec(query interface{}, args ...interfac
 	varargs := append([]interface{}{query}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exec", reflect.TypeOf((*MocksqliteDBConn)(nil).Exec), varargs...)
 }
+
+// Query mocks base method
+func (m *MocksqliteDBConn) Query(query string, args ...any) (*sql.Rows, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{query}
+	for _, a := range args {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Query", varargs...)
+	ret0, _ := ret[0].(*sql.Rows)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Query indicates an expected call of Query
+func (mr *MocksqliteDBConnMockRecorder) Query(query interface{}, args ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{query}, args...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MocksqliteDBConn)(nil).Query), varargs...)
+}
