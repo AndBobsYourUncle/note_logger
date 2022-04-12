@@ -1,1 +1,67 @@
-# note_logger
+# Note Logger
+
+## Building
+Ensure that you have Go 1.18 installed locally, and run:
+```shell
+go build
+```
+
+## Usage
+
+On the first run, wherever the location of the compiled binary is location, a SQLite DB will be created called `notes.sqlite`.
+
+This stores all the notes logged so far, and allows listing them back in the future.
+
+If you have not compiled the app, but instead use `go run main.go note-logger`, then the DB will end up being located in a temp folder somewhere (differs by operating system, and Go installation).
+
+### Add a Note
+
+```shell
+note-logger add-note -n "Some new note!"
+```
+
+This will result in some output:
+
+```shell
+Note added:
+2 - Apr 12 16:32:31: Some new note!
+```
+
+You'll get the note's ID, the timestamp when it was created, and the contents.
+
+### Delete a Note
+
+```shell
+note-logger delete-note -i 2
+```
+
+As an argument, you pass in the ID of the note to delete. This will be the output, if successful:
+
+```shell
+2022/04/12 16:33:46 Note deleted.
+```
+
+### List Notes
+
+The listing of existing notes takes in two arguments, the beginning, and end for the time period. The values are interpreted using the available English-friendly values compatible with the [go-naturaldate](github.com/tj/go-naturaldate) package.
+
+For example, here is listing all notes for today:
+
+```shell
+note-logger list-notes --b "beginning of today" --e "now"
+```
+
+Or even all of the week so far:
+
+```shell
+note-logger list-notes --b "beginning of week" --e "now"
+```
+
+You'll get output like this:
+
+```shell
+1 - Apr 12 16:26:19: First note with it all working!
+2 - Apr 12 16:37:16: Another note for sample!
+```
+
+Similar to when you create a note, you'll get the note's ID, the timestamp, and the content. You can then retroactively delete notes this way using the `delete-note` command.
