@@ -65,3 +65,32 @@ You'll get output like this:
 ```
 
 Similar to when you create a note, you'll get the note's ID, the timestamp, and the content. You can then retroactively delete notes this way using the `delete-note` command.
+
+## Bash Functions
+
+Executing the commands this way takes time, and perhaps it might be more convenient to type something simple into the terminal. Here are some sample Bash functions that you can add to your `.bashrc` file that make it easier to do common things:
+
+```bash
+function note() {
+  quoted_note="$@"
+
+  ~/projects/note_logger/note-logger add-note --n $quoted_note
+}
+
+function delnote() {
+  ~/projects/note_logger/note-logger delete-note --i $@
+}
+
+function notes_today() {
+  ~/projects/note_logger/note-logger list-notes --b "beginning of today" --e "now"
+}
+
+function notes_week() {
+  ~/projects/note_logger/note-logger list-notes --b "beginning of week" --e "now"
+}
+```
+
+With this, adding a note can be as simple as typing this in your terminal:
+```bash
+note Here is a new note!
+```
