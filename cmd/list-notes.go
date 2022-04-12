@@ -49,7 +49,7 @@ var listNotesCommand = &cobra.Command{
 		}
 
 		for _, note := range notesRes {
-			fmt.Printf("%v: %v\n", note.CreatedAt.Format(time.Stamp), note.Content)
+			fmt.Printf("%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
 		}
 	},
 }
