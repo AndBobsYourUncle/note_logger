@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"note-logger/internal/entities"
 	"note-logger/internal/repositories/notes"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -34,7 +36,7 @@ var addNoteCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		log.Println("Note added:", note)
+		fmt.Printf("Note added:\n%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
 	},
 }
 
