@@ -28,10 +28,15 @@ const insertNote string = `
 INSERT INTO notes VALUES(NULL,?,?);
 `
 
+const listBetween string = `
+SELECT * FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
+`
+
 //go:generate mockgen -destination=mock_sql/mock.go -package=mock_sql -source=sqlite.go
 
 type sqliteDBConn interface {
 	Exec(query string, args ...any) (sql.Result, error)
+	Query(query string, args ...any) (*sql.Rows, error)
 }
 
 type sqliteRepo struct {
@@ -94,6 +99,36 @@ func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entit
 	note.ID = lastID
 
 	return note, nil
+}
+
+func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, endTime time.Time) ([]*entities.Note, error) {
+	retNotes := make([]*entities.Note, 0)
+
+	rows, err := repo.dbConn.Query(listBetween, startTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		var createdAt time.Time
+		var content string
+
+		err = rows.Scan(&id, &createdAt, &content)
+		if err != nil {
+			return nil, err
+		}
+
+		retNotes = append(retNotes, &entities.Note{
+			ID:        id,
+			Content:   content,
+			CreatedAt: createdAt,
+		})
+	}
+
+	return retNotes, nil
 }
 
 func touchDBFile(filename string) error {
