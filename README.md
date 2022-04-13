@@ -1,5 +1,8 @@
 # Note Logger
 
+## Summary
+A very simple note-taking CLI you can use from the terminal that uses a SQLite DB to persist, and query, notes.
+
 ## Building/Installing
 Ensure that you have Go 1.18 installed locally, and run:
 ```shell
