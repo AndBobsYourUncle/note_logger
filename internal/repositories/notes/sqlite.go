@@ -13,7 +13,7 @@ import (
 )
 
 const insertNoteQuery string = `
-INSERT INTO notes VALUES(NULL,?,?);
+INSERT INTO notes (content, created_at) VALUES(?,?);
 `
 
 const listBetweenQuery string = `

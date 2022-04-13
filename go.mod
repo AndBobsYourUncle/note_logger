@@ -8,6 +8,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
+	github.com/tj/assert v0.0.0-20190920132354-ee03d75cd160
 	github.com/tj/go-naturaldate v1.3.0
 )
 
