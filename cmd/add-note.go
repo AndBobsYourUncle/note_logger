@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"note-logger/internal/databases/sqlite"
 	"time"
 
 	"note-logger/internal/entities"
@@ -26,6 +27,11 @@ var addNoteCommand = &cobra.Command{
 
 		if noteLine == "" {
 			log.Fatal(errors.New("note content required"))
+		}
+
+		sqliteDB, err := sqlite.New(ctx)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})

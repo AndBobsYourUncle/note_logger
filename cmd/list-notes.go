@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"note-logger/internal/databases/sqlite"
 	"note-logger/internal/repositories/notes"
 
 	"github.com/spf13/cobra"
@@ -43,6 +44,11 @@ var listNotesCommand = &cobra.Command{
 		}
 
 		endTime, err := naturaldate.Parse(endTimeString, time.Now())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		sqliteDB, err := sqlite.New(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}

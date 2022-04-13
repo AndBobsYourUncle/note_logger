@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"note-logger/internal/databases/sqlite"
 	"note-logger/internal/repositories/notes"
 
 	"github.com/spf13/cobra"
@@ -22,6 +23,11 @@ var deleteNoteCommand = &cobra.Command{
 
 		if noteID == 0 {
 			log.Fatal(errors.New("note ID required"))
+		}
+
+		sqliteDB, err := sqlite.New(ctx)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})

@@ -45,9 +45,8 @@ func (s *testSuite) SetupTest() {
 func (s *testSuite) AfterTest(_, _ string) {
 	s.ctrl.Finish()
 
-	if err := s.mockDB.ExpectationsWereMet(); err != nil {
-		s.T().Errorf("there were unfulfilled expectations: %s", err)
-	}
+	err := s.mockDB.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *testSuite) TestNotesRepo_Create_Success() {

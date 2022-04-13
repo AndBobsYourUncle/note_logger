@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ CREATE INDEX IF NOT EXISTS created_at_index
 ON notes(created_at);
 `
 
-func New() (*sql.DB, error) {
+func New(ctx context.Context) (*sql.DB, error) {
 	ex, err := os.Executable()
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func New() (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = migrate(db)
+	err = migrate(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +49,12 @@ func New() (*sql.DB, error) {
 	return db, nil
 }
 
-func migrate(db *sql.DB) error {
-	if _, err := db.Exec(createTableIfNotExistsQuery); err != nil {
+func migrate(ctx context.Context, db *sql.DB) error {
+	if _, err := db.ExecContext(ctx, createTableIfNotExistsQuery); err != nil {
 		return err
 	}
 
-	if _, err := db.Exec(createIndexIfNotExistsQuery); err != nil {
+	if _, err := db.ExecContext(ctx, createIndexIfNotExistsQuery); err != nil {
 		return err
 	}
 
