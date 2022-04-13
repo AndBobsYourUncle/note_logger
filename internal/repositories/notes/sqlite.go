@@ -62,6 +62,7 @@ func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entit
 	//}
 	//
 	//note.ID = lastID
+	// trigger
 
 	return note, nil
 }
