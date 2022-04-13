@@ -52,5 +52,5 @@ var deleteNoteCommand = &cobra.Command{
 func init() {
 	rootCommand.AddCommand(deleteNoteCommand)
 
-	deleteNoteCommand.PersistentFlags().Int64("i", 0, "The ID of the note to delete.")
+	deleteNoteCommand.Flags().Int64P("id", "i", 0, "The ID of the note to delete.")
 }

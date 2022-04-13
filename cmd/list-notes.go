@@ -76,6 +76,6 @@ var listNotesCommand = &cobra.Command{
 func init() {
 	rootCommand.AddCommand(listNotesCommand)
 
-	listNotesCommand.PersistentFlags().String("b", "", "Beginning of the time window")
-	listNotesCommand.PersistentFlags().String("e", "", "End of the time window")
+	listNotesCommand.Flags().StringP("start", "s", "", "Start of the time window")
+	listNotesCommand.Flags().StringP("end", "e", "", "End of the time window")
 }

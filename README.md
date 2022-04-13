@@ -20,7 +20,7 @@ If you have not compiled the app, but instead use `go run main.go note-logger`, 
 ### Add a Note
 
 ```shell
-note-logger add-note -n "Some new note!"
+note-logger add-note -c "Some new note!"
 ```
 
 This will result in some output:
@@ -51,13 +51,13 @@ The listing of existing notes takes in two arguments, the beginning, and end for
 For example, here is listing all notes for today:
 
 ```shell
-note-logger list-notes --b "beginning of today" --e "now"
+note-logger list-notes -s "beginning of today" -e "now"
 ```
 
 Or even all of the week so far:
 
 ```shell
-note-logger list-notes --b "beginning of week" --e "now"
+note-logger list-notes -s "beginning of week" -e "now"
 ```
 
 You'll get output like this:
@@ -77,19 +77,19 @@ Executing the commands this way takes time, and perhaps it might be more conveni
 function note() {
   quoted_note="$@"
 
-  note-logger add-note --n $quoted_note
+  note-logger add-note -c $quoted_note
 }
 
 function delnote() {
-  note-logger delete-note --i $@
+  note-logger delete-note -i $@
 }
 
 function notes_today() {
-  note-logger list-notes --b "beginning of today" --e "now"
+  note-logger list-notes -s "beginning of today" -e "now"
 }
 
 function notes_week() {
-  note-logger list-notes --b "beginning of week" --e "now"
+  note-logger list-notes -s "beginning of week" -e "now"
 }
 ```
 

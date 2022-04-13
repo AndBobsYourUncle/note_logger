@@ -57,5 +57,5 @@ var addNoteCommand = &cobra.Command{
 func init() {
 	rootCommand.AddCommand(addNoteCommand)
 
-	addNoteCommand.PersistentFlags().String("n", "", "The note contents to add.")
+	addNoteCommand.Flags().StringP("content", "c", "", "The note contents to add.")
 }
