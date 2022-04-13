@@ -8,7 +8,7 @@ go install
 
 ## Usage
 
-On the first run, wherever the location of the compiled binary is location, a SQLite DB will be created called `notes.sqlite`.
+On the first run, wherever the installed binary is located, a SQLite DB will be created called `notes.sqlite`.
 
 This stores all the notes logged so far, and allows listing them back in the future.
 
