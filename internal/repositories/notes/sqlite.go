@@ -9,6 +9,8 @@ import (
 
 	"note-logger/internal/clock"
 	"note-logger/internal/entities"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const dbFile string = "notes.sqlite"
