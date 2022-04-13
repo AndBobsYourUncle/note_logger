@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"note-logger/internal/repositories/notes"
 	"time"
 
-	"github.com/tj/go-naturaldate"
+	"note-logger/internal/repositories/notes"
 
 	"github.com/spf13/cobra"
+	"github.com/tj/go-naturaldate"
 )
 
 var listNotesCommand = &cobra.Command{

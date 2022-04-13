@@ -3,11 +3,12 @@ package notes
 import (
 	"context"
 	"database/sql"
-	"note-logger/internal/clock"
-	"note-logger/internal/entities"
 	"os"
 	"path/filepath"
 	"time"
+
+	"note-logger/internal/clock"
+	"note-logger/internal/entities"
 )
 
 const dbFile string = "notes.sqlite"

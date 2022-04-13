@@ -4,17 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	mock_clock "note-logger/internal/clock/mock"
-	"note-logger/internal/entities"
 	"regexp"
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
-
-	"github.com/stretchr/testify/assert"
+	mock_clock "note-logger/internal/clock/mock"
+	"note-logger/internal/entities"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func newMock() (*sql.DB, sqlmock.Sqlmock) {
@@ -47,7 +46,7 @@ func TestMigrate(t *testing.T) {
 		mock.ExpectExec(regexp.QuoteMeta(createIndexIfNotExistsQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err := repo.Migrate(ctx)
-		
+
 		assert.NoError(t, err)
 
 		if err = mock.ExpectationsWereMet(); err != nil {

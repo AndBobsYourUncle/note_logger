@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+
 	"note-logger/internal/repositories/notes"
 
 	"github.com/spf13/cobra"

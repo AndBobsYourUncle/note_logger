@@ -5,13 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"note-logger/internal/entities"
-	"note-logger/internal/repositories/notes"
 	"time"
 
-	"github.com/spf13/cobra"
+	"note-logger/internal/entities"
+	"note-logger/internal/repositories/notes"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/cobra"
 )
 
 var addNoteCommand = &cobra.Command{

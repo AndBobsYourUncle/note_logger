@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/golang/mock v1.6.0
-	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
 	github.com/tj/go-naturaldate v1.3.0

@@ -2,8 +2,9 @@ package notes
 
 import (
 	"context"
-	"note-logger/internal/entities"
 	"time"
+
+	"note-logger/internal/entities"
 )
 
 //go:generate mockgen -destination=mock/mock.go -package=mock_notes -source=interface.go
