@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"note-logger/internal/entities"
@@ -22,6 +23,10 @@ var addNoteCommand = &cobra.Command{
 		noteLine, err := cmd.Flags().GetString("n")
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if noteLine == "" {
+			log.Fatal(errors.New("note content required"))
 		}
 
 		notesRepo, err := notes.NewRepository()

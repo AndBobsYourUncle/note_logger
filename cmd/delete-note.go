@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 	"note-logger/internal/repositories/notes"
 
@@ -17,6 +18,10 @@ var deleteNoteCommand = &cobra.Command{
 		noteID, err := cmd.Flags().GetInt64("i")
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if noteID == 0 {
+			log.Fatal(errors.New("note ID required"))
 		}
 
 		notesRepo, err := notes.NewRepository()

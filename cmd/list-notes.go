@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"note-logger/internal/repositories/notes"
@@ -23,9 +24,17 @@ var listNotesCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		if beginningTimeString == "" {
+			log.Fatal(errors.New("beginning time required"))
+		}
+
 		endTimeString, err := cmd.Flags().GetString("e")
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if endTimeString == "" {
+			log.Fatal(errors.New("end time required"))
 		}
 
 		beginningTime, err := naturaldate.Parse(beginningTimeString, time.Now())
