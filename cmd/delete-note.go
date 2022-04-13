@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-
 	"note-logger/internal/repositories/notes"
 
 	"github.com/spf13/cobra"
@@ -25,12 +24,7 @@ var deleteNoteCommand = &cobra.Command{
 			log.Fatal(errors.New("note ID required"))
 		}
 
-		notesRepo, err := notes.NewRepository()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = notesRepo.Migrate(ctx)
+		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -41,11 +35,6 @@ var deleteNoteCommand = &cobra.Command{
 		}
 
 		log.Println("Note deleted.")
-
-		err = notesRepo.Close(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
 	},
 }
 

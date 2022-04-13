@@ -2,8 +2,6 @@ package notes
 
 import (
 	"context"
-	"database/sql"
-	"log"
 	"regexp"
 	"testing"
 	"time"
@@ -14,181 +12,111 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func newMock() (*sql.DB, sqlmock.Sqlmock) {
-	db, mock, err := sqlmock.New()
+type testSuite struct {
+	suite.Suite
+	ctrl        *gomock.Controller
+	ctx         context.Context
+	mockDB      sqlmock.Sqlmock
+	mockClock   *mock_clock.MockClock
+	repoFixture *sqliteRepo
+}
+
+func (s *testSuite) SetupTest() {
+	s.ctrl = gomock.NewController(s.T())
+	s.ctx = context.Background()
+
+	db, mockDB, err := sqlmock.New()
 	if err != nil {
-		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		s.T().Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	return db, mock
+	s.mockDB = mockDB
+	s.mockClock = mock_clock.NewMockClock(s.ctrl)
+
+	s.repoFixture = &sqliteRepo{
+		dbConn: db,
+		clock:  s.mockClock,
+	}
 }
 
-func TestMigrate(t *testing.T) {
-	t.Run("successfully runs the migrations", func(t *testing.T) {
-		ctx := context.Background()
-		ctrl := gomock.NewController(t)
+func (s *testSuite) AfterTest(_, _ string) {
+	s.ctrl.Finish()
 
-		db, mock := newMock()
-		mockClock := mock_clock.NewMockClock(ctrl)
-
-		repo := &sqliteRepo{
-			dbConn: db,
-			clock:  mockClock,
-		}
-
-		defer func() {
-			repo.Close(ctx)
-		}()
-
-		mock.ExpectExec(regexp.QuoteMeta(createTableIfNotExistsQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
-		mock.ExpectExec(regexp.QuoteMeta(createIndexIfNotExistsQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-		err := repo.Migrate(ctx)
-
-		assert.NoError(t, err)
-
-		if err = mock.ExpectationsWereMet(); err != nil {
-			t.Errorf("there were unfulfilled expectations: %s", err)
-		}
-
-		ctrl.Finish()
-	})
+	if err := s.mockDB.ExpectationsWereMet(); err != nil {
+		s.T().Errorf("there were unfulfilled expectations: %s", err)
+	}
 }
 
-func TestCreate(t *testing.T) {
-	t.Run("successfully creates a new note", func(t *testing.T) {
-		ctx := context.Background()
-		ctrl := gomock.NewController(t)
+func (s *testSuite) TestNotesRepo_Create_Success() {
+	createdAt := time.Unix(1649707678, 0).UTC()
 
-		db, mock := newMock()
-		mockClock := mock_clock.NewMockClock(ctrl)
+	newNote := &entities.Note{
+		Content: "This is a new note!",
+	}
 
-		repo := &sqliteRepo{
-			dbConn: db,
-			clock:  mockClock,
-		}
+	expectedNote := &entities.Note{
+		ID:        5,
+		Content:   "This is a new note!",
+		CreatedAt: createdAt,
+	}
 
-		defer func() {
-			repo.Close(ctx)
-		}()
+	s.mockClock.EXPECT().Now().Return(createdAt)
 
-		createdAt := time.Unix(1649707678, 0).UTC()
+	s.mockDB.ExpectExec(regexp.QuoteMeta(insertNoteQuery)).
+		WithArgs(createdAt, expectedNote.Content).WillReturnResult(sqlmock.NewResult(5, 1))
 
-		newNote := &entities.Note{
-			Content: "This is a new note!",
-		}
+	res, err := s.repoFixture.Create(s.ctx, newNote)
 
-		expectedNote := &entities.Note{
-			ID:        5,
-			Content:   "This is a new note!",
-			CreatedAt: createdAt,
-		}
-
-		mockClock.EXPECT().Now().Return(createdAt)
-
-		mock.ExpectExec(regexp.QuoteMeta(insertNoteQuery)).
-			WithArgs(createdAt, expectedNote.Content).WillReturnResult(sqlmock.NewResult(5, 1))
-
-		res, err := repo.Create(ctx, newNote)
-
-		assert.Equal(t, expectedNote, res)
-		assert.NoError(t, err)
-
-		if err = mock.ExpectationsWereMet(); err != nil {
-			t.Errorf("there were unfulfilled expectations: %s", err)
-		}
-
-		ctrl.Finish()
-	})
+	assert.Equal(s.T(), expectedNote, res)
+	assert.NoError(s.T(), err)
 }
 
-func TestListBetween(t *testing.T) {
-	t.Run("successfully lists notes between two dates", func(t *testing.T) {
-		ctx := context.Background()
-		ctrl := gomock.NewController(t)
+func (s *testSuite) TestNotesRepo_ListBetween_Success() {
+	expectedNotes := []*entities.Note{
+		{
+			ID:        1,
+			Content:   "Some first note!",
+			CreatedAt: time.Unix(1649707678, 0).UTC(),
+		},
+		{
+			ID:        2,
+			Content:   "Some second note!",
+			CreatedAt: time.Unix(1649717678, 0).UTC(),
+		},
+		{
+			ID:        3,
+			Content:   "Some third note!",
+			CreatedAt: time.Unix(1649727678, 0).UTC(),
+		},
+	}
 
-		db, mock := newMock()
-		mockClock := mock_clock.NewMockClock(ctrl)
+	rows := sqlmock.NewRows([]string{"id", "created_at", "content"}).
+		AddRow(expectedNotes[0].ID, expectedNotes[0].CreatedAt, expectedNotes[0].Content).
+		AddRow(expectedNotes[1].ID, expectedNotes[1].CreatedAt, expectedNotes[1].Content).
+		AddRow(expectedNotes[2].ID, expectedNotes[2].CreatedAt, expectedNotes[2].Content)
 
-		repo := &sqliteRepo{
-			dbConn: db,
-			clock:  mockClock,
-		}
+	startTime := time.Unix(1649707678, 0).UTC()
+	endTime := time.Unix(1649807678, 0).UTC()
 
-		defer func() {
-			repo.Close(ctx)
-		}()
+	s.mockDB.ExpectQuery(regexp.QuoteMeta(listBetweenQuery)).WithArgs(startTime, endTime).WillReturnRows(rows)
 
-		expectedNotes := []*entities.Note{
-			{
-				ID:        1,
-				Content:   "Some first note!",
-				CreatedAt: time.Unix(1649707678, 0).UTC(),
-			},
-			{
-				ID:        2,
-				Content:   "Some second note!",
-				CreatedAt: time.Unix(1649717678, 0).UTC(),
-			},
-			{
-				ID:        3,
-				Content:   "Some third note!",
-				CreatedAt: time.Unix(1649727678, 0).UTC(),
-			},
-		}
+	res, err := s.repoFixture.ListBetween(s.ctx, startTime, endTime)
 
-		rows := sqlmock.NewRows([]string{"id", "created_at", "content"}).
-			AddRow(expectedNotes[0].ID, expectedNotes[0].CreatedAt, expectedNotes[0].Content).
-			AddRow(expectedNotes[1].ID, expectedNotes[1].CreatedAt, expectedNotes[1].Content).
-			AddRow(expectedNotes[2].ID, expectedNotes[2].CreatedAt, expectedNotes[2].Content)
-
-		startTime := time.Unix(1649707678, 0).UTC()
-		endTime := time.Unix(1649807678, 0).UTC()
-
-		mock.ExpectQuery(regexp.QuoteMeta(listBetweenQuery)).WithArgs(startTime, endTime).WillReturnRows(rows)
-
-		res, err := repo.ListBetween(ctx, startTime, endTime)
-
-		assert.Equal(t, expectedNotes, res)
-		assert.NoError(t, err)
-
-		if err = mock.ExpectationsWereMet(); err != nil {
-			t.Errorf("there were unfulfilled expectations: %s", err)
-		}
-
-		ctrl.Finish()
-	})
+	assert.Equal(s.T(), expectedNotes, res)
+	assert.NoError(s.T(), err)
 }
 
-func TestDelete(t *testing.T) {
-	t.Run("successfully deletes a note", func(t *testing.T) {
-		ctx := context.Background()
-		ctrl := gomock.NewController(t)
+func (s *testSuite) TestNotesRepo_Delete_Success() {
+	s.mockDB.ExpectExec(regexp.QuoteMeta(deleteNoteQuery)).WithArgs(int64(100)).WillReturnResult(sqlmock.NewResult(100, 1))
 
-		db, mock := newMock()
-		mockClock := mock_clock.NewMockClock(ctrl)
+	err := s.repoFixture.Delete(s.ctx, int64(100))
 
-		repo := &sqliteRepo{
-			dbConn: db,
-			clock:  mockClock,
-		}
+	assert.NoError(s.T(), err)
+}
 
-		defer func() {
-			repo.Close(ctx)
-		}()
-
-		mock.ExpectExec(regexp.QuoteMeta(deleteNoteQuery)).WithArgs(int64(100)).WillReturnResult(sqlmock.NewResult(100, 1))
-
-		err := repo.Delete(ctx, int64(100))
-
-		assert.NoError(t, err)
-
-		if err = mock.ExpectationsWereMet(); err != nil {
-			t.Errorf("there were unfulfilled expectations: %s", err)
-		}
-
-		ctrl.Finish()
-	})
+func TestSuites(t *testing.T) {
+	suite.Run(t, new(testSuite))
 }

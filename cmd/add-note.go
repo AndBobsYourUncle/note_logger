@@ -28,12 +28,7 @@ var addNoteCommand = &cobra.Command{
 			log.Fatal(errors.New("note content required"))
 		}
 
-		notesRepo, err := notes.NewRepository()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = notesRepo.Migrate(ctx)
+		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,11 +41,6 @@ var addNoteCommand = &cobra.Command{
 		}
 
 		fmt.Printf("Note added:\n%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
-
-		err = notesRepo.Close(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
 	},
 }
 
