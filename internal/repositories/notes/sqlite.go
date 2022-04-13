@@ -51,17 +51,17 @@ func NewRepository(cfg *Config) (Repository, error) {
 func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entities.Note, error) {
 	note.CreatedAt = repo.clock.Now()
 
-	res, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.CreatedAt, note.Content)
+	_, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.CreatedAt, note.Content)
 	if err != nil {
 		return nil, err
 	}
 
-	lastID, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	note.ID = lastID
+	//lastID, err := res.LastInsertId()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//note.ID = lastID
 
 	return note, nil
 }
