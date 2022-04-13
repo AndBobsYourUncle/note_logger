@@ -12,4 +12,5 @@ type Repository interface {
 	Create(ctx context.Context, note *entities.Note) (*entities.Note, error)
 	ListBetween(ctx context.Context, startTime time.Time, endTime time.Time) ([]*entities.Note, error)
 	Delete(ctx context.Context, noteID int64) error
+	Close(ctx context.Context) error
 }

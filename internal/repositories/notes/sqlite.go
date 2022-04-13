@@ -38,13 +38,8 @@ DELETE FROM notes WHERE id = ?
 
 //go:generate mockgen -destination=mock_sql/mock.go -package=mock_sql -source=sqlite.go
 
-type sqliteDBConn interface {
-	Exec(query string, args ...any) (sql.Result, error)
-	Query(query string, args ...any) (*sql.Rows, error)
-}
-
 type sqliteRepo struct {
-	dbConn sqliteDBConn
+	dbConn *sql.DB
 	clock  clock.Clock
 }
 
@@ -90,7 +85,7 @@ func NewRepository() (Repository, error) {
 func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entities.Note, error) {
 	note.CreatedAt = repo.clock.Now()
 
-	res, err := repo.dbConn.Exec(insertNote, time.Now(), note.Content)
+	res, err := repo.dbConn.Exec(insertNote, note.CreatedAt, note.Content)
 	if err != nil {
 		return nil, err
 	}
@@ -142,6 +137,10 @@ func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
 	}
 
 	return nil
+}
+
+func (repo *sqliteRepo) Close(ctx context.Context) error {
+	return repo.dbConn.Close()
 }
 
 func touchDBFile(filename string) error {

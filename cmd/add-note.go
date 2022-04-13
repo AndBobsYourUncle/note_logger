@@ -37,6 +37,11 @@ var addNoteCommand = &cobra.Command{
 		}
 
 		fmt.Printf("Note added:\n%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
+
+		err = notesRepo.Close(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

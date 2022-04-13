@@ -30,6 +30,11 @@ var deleteNoteCommand = &cobra.Command{
 		}
 
 		log.Println("Note deleted.")
+
+		err = notesRepo.Close(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

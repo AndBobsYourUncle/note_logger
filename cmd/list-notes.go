@@ -51,6 +51,11 @@ var listNotesCommand = &cobra.Command{
 		for _, note := range notesRes {
 			fmt.Printf("%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
 		}
+
+		err = notesRepo.Close(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
