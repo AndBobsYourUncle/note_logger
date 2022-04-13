@@ -1,9 +1,9 @@
 # Note Logger
 
-## Building
+## Building/Installing
 Ensure that you have Go 1.18 installed locally, and run:
 ```shell
-go build
+go install
 ```
 
 ## Usage
@@ -74,19 +74,19 @@ Executing the commands this way takes time, and perhaps it might be more conveni
 function note() {
   quoted_note="$@"
 
-  ~/projects/note_logger/note-logger add-note --n $quoted_note
+  note-logger add-note --n $quoted_note
 }
 
 function delnote() {
-  ~/projects/note_logger/note-logger delete-note --i $@
+  note-logger delete-note --i $@
 }
 
 function notes_today() {
-  ~/projects/note_logger/note-logger list-notes --b "beginning of today" --e "now"
+  note-logger list-notes --b "beginning of today" --e "now"
 }
 
 function notes_week() {
-  ~/projects/note_logger/note-logger list-notes --b "beginning of week" --e "now"
+  note-logger list-notes --b "beginning of week" --e "now"
 }
 ```
 
