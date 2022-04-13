@@ -43,6 +43,11 @@ var listNotesCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		err = notesRepo.Migrate(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		notesRes, err := notesRepo.ListBetween(ctx, beginningTime, endTime)
 		if err != nil {
 			log.Fatal(err)

@@ -26,6 +26,38 @@ func newMock() (*sql.DB, sqlmock.Sqlmock) {
 	return db, mock
 }
 
+func TestMigrate(t *testing.T) {
+	t.Run("successfully runs the migrations", func(t *testing.T) {
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+
+		db, mock := newMock()
+		mockClock := mock_clock.NewMockClock(ctrl)
+
+		repo := &sqliteRepo{
+			dbConn: db,
+			clock:  mockClock,
+		}
+
+		defer func() {
+			repo.Close(ctx)
+		}()
+
+		mock.ExpectExec(regexp.QuoteMeta(createTableIfNotExistsQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec(regexp.QuoteMeta(createIndexIfNotExistsQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
+
+		err := repo.Migrate(ctx)
+		
+		assert.NoError(t, err)
+
+		if err = mock.ExpectationsWereMet(); err != nil {
+			t.Errorf("there were unfulfilled expectations: %s", err)
+		}
+
+		ctrl.Finish()
+	})
+}
+
 func TestCreate(t *testing.T) {
 	t.Run("successfully creates a new note", func(t *testing.T) {
 		ctx := context.Background()
@@ -57,7 +89,7 @@ func TestCreate(t *testing.T) {
 
 		mockClock.EXPECT().Now().Return(createdAt)
 
-		mock.ExpectExec(regexp.QuoteMeta(insertNote)).
+		mock.ExpectExec(regexp.QuoteMeta(insertNoteQuery)).
 			WithArgs(createdAt, expectedNote.Content).WillReturnResult(sqlmock.NewResult(5, 1))
 
 		res, err := repo.Create(ctx, newNote)
@@ -116,7 +148,7 @@ func TestListBetween(t *testing.T) {
 		startTime := time.Unix(1649707678, 0).UTC()
 		endTime := time.Unix(1649807678, 0).UTC()
 
-		mock.ExpectQuery(regexp.QuoteMeta(listBetween)).WithArgs(startTime, endTime).WillReturnRows(rows)
+		mock.ExpectQuery(regexp.QuoteMeta(listBetweenQuery)).WithArgs(startTime, endTime).WillReturnRows(rows)
 
 		res, err := repo.ListBetween(ctx, startTime, endTime)
 
@@ -148,7 +180,7 @@ func TestDelete(t *testing.T) {
 			repo.Close(ctx)
 		}()
 
-		mock.ExpectExec(regexp.QuoteMeta(deleteNote)).WithArgs(int64(100)).WillReturnResult(sqlmock.NewResult(100, 1))
+		mock.ExpectExec(regexp.QuoteMeta(deleteNoteQuery)).WithArgs(int64(100)).WillReturnResult(sqlmock.NewResult(100, 1))
 
 		err := repo.Delete(ctx, int64(100))
 

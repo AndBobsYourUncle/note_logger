@@ -24,6 +24,11 @@ var deleteNoteCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		err = notesRepo.Migrate(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		err = notesRepo.Delete(ctx, noteID)
 		if err != nil {
 			log.Fatal(err)

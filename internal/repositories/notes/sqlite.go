@@ -12,27 +12,27 @@ import (
 
 const dbFile string = "notes.sqlite"
 
-const createTable string = `
+const createTableIfNotExistsQuery string = `
 CREATE TABLE IF NOT EXISTS notes (
 id INTEGER NOT NULL PRIMARY KEY,
 created_at DATETIME NOT NULL,
 content TEXT
 );`
 
-const createIndex string = `
+const createIndexIfNotExistsQuery string = `
 CREATE INDEX IF NOT EXISTS created_at_index 
 ON notes(created_at);
 `
 
-const insertNote string = `
+const insertNoteQuery string = `
 INSERT INTO notes VALUES(NULL,?,?);
 `
 
-const listBetween string = `
+const listBetweenQuery string = `
 SELECT * FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
 `
 
-const deleteNote string = `
+const deleteNoteQuery string = `
 DELETE FROM notes WHERE id = ?
 `
 
@@ -67,25 +67,28 @@ func NewRepository() (Repository, error) {
 		return nil, err
 	}
 
-	// ensure that the DB is set up properly with the table/indices needed
-	if _, err = db.Exec(createTable); err != nil {
-		return nil, err
-	}
-
-	if _, err = db.Exec(createIndex); err != nil {
-		return nil, err
-	}
-
 	return &sqliteRepo{
 		dbConn: db,
 		clock:  clock.NewClock(),
 	}, nil
 }
 
+func (repo *sqliteRepo) Migrate(ctx context.Context) error {
+	if _, err := repo.dbConn.Exec(createTableIfNotExistsQuery); err != nil {
+		return err
+	}
+
+	if _, err := repo.dbConn.Exec(createIndexIfNotExistsQuery); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entities.Note, error) {
 	note.CreatedAt = repo.clock.Now()
 
-	res, err := repo.dbConn.Exec(insertNote, note.CreatedAt, note.Content)
+	res, err := repo.dbConn.Exec(insertNoteQuery, note.CreatedAt, note.Content)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +106,7 @@ func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entit
 func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, endTime time.Time) ([]*entities.Note, error) {
 	retNotes := make([]*entities.Note, 0)
 
-	rows, err := repo.dbConn.Query(listBetween, startTime, endTime)
+	rows, err := repo.dbConn.Query(listBetweenQuery, startTime, endTime)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +134,7 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 }
 
 func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
-	_, err := repo.dbConn.Exec(deleteNote, noteID)
+	_, err := repo.dbConn.Exec(deleteNoteQuery, noteID)
 	if err != nil {
 		return err
 	}

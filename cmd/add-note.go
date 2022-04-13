@@ -29,6 +29,11 @@ var addNoteCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		err = notesRepo.Migrate(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		note, err := notesRepo.Create(ctx, &entities.Note{
 			Content: noteLine,
 		})
