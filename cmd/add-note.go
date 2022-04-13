@@ -19,7 +19,7 @@ var addNoteCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		noteLine, err := cmd.Flags().GetString("n")
+		noteLine, err := cmd.Flags().GetString("content")
 		if err != nil {
 			log.Fatal(err)
 		}

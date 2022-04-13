@@ -19,7 +19,7 @@ var listNotesCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		beginningTimeString, err := cmd.Flags().GetString("b")
+		beginningTimeString, err := cmd.Flags().GetString("start")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -28,7 +28,7 @@ var listNotesCommand = &cobra.Command{
 			log.Fatal(errors.New("beginning time required"))
 		}
 
-		endTimeString, err := cmd.Flags().GetString("e")
+		endTimeString, err := cmd.Flags().GetString("end")
 		if err != nil {
 			log.Fatal(err)
 		}

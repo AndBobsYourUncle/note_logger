@@ -16,7 +16,7 @@ var deleteNoteCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		noteID, err := cmd.Flags().GetInt64("i")
+		noteID, err := cmd.Flags().GetInt64("id")
 		if err != nil {
 			log.Fatal(err)
 		}
