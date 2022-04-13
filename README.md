@@ -46,7 +46,7 @@ As an argument, you pass in the ID of the note to delete. This will be the outpu
 
 ### List Notes
 
-The listing of existing notes takes in two arguments, the beginning, and end for the time period. The values are interpreted using the available English-friendly values compatible with the [go-naturaldate](github.com/tj/go-naturaldate) package.
+The listing of existing notes takes in two arguments, the beginning, and end for the time period. The values are interpreted using the available English-friendly values compatible with the [go-naturaldate](https://github.com/tj/go-naturaldate) package.
 
 For example, here is listing all notes for today:
 
