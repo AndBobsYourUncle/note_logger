@@ -20,6 +20,10 @@ const listBetweenQuery string = `
 SELECT id, content, created_at FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
 `
 
+const noteExistsQuery string = `
+SELECT id FROM notes WHERE id = ?
+`
+
 const deleteNoteQuery string = `
 DELETE FROM notes WHERE id = ?
 `
@@ -97,7 +101,14 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 }
 
 func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
-	_, err := repo.dbConn.ExecContext(ctx, deleteNoteQuery, noteID)
+	row := repo.dbConn.QueryRowContext(ctx, noteExistsQuery, noteID)
+
+	err := row.Scan()
+	if err != nil {
+		return errors.New("note does not exist")
+	}
+
+	_, err = repo.dbConn.ExecContext(ctx, deleteNoteQuery, noteID)
 	if err != nil {
 		return err
 	}
