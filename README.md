@@ -41,7 +41,7 @@ note-logger delete-note -i 2
 As an argument, you pass in the ID of the note to delete. This will be the output, if successful:
 
 ```shell
-2022/04/12 16:33:46 Note deleted.
+Note deleted.
 ```
 
 ### List Notes
