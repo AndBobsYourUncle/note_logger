@@ -89,7 +89,7 @@ func migrate(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
-func execMigration(ctx context.Context, db *sql.DB, migrationNum int) (err error) {
+func execMigration(ctx context.Context, db *sql.DB, migrationNum int) error {
 	log.Printf("Running migration %v '%v'\n", migrationNum, migrations[migrationNum-1].migrationName)
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -97,11 +97,8 @@ func execMigration(ctx context.Context, db *sql.DB, migrationNum int) (err error
 		return err
 	}
 
-	defer func() {
-		if err != nil {
-			err = tx.Rollback()
-		}
-	}()
+	//nolint
+	defer tx.Rollback()
 
 	_, err = tx.ExecContext(ctx, migrations[migrationNum-1].migrationQuery)
 	if err != nil {
@@ -120,7 +117,7 @@ func execMigration(ctx context.Context, db *sql.DB, migrationNum int) (err error
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func DBFilename() (string, error) {

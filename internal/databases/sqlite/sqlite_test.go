@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,6 +47,29 @@ func TestSQLite_Migrate(t *testing.T) {
 
 		err = migrate(ctx, db)
 		assert.NoError(t, err)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+
+	t.Run("has a rollback", func(t *testing.T) {
+		ctx := context.Background()
+
+		db, mockDB, err := sqlmock.New()
+		assert.NoError(t, err)
+
+		rows := sqlmock.NewRows([]string{"user_version"}).AddRow(0)
+
+		mockDB.ExpectQuery(regexp.QuoteMeta(getCurrentMigration)).WillReturnRows(rows)
+
+		mockDB.ExpectBegin()
+
+		mockDB.ExpectExec(regexp.QuoteMeta(createTableIfNotExistsQuery)).WillReturnError(errors.New("some sql error"))
+
+		mockDB.ExpectRollback()
+
+		err = migrate(ctx, db)
+		assert.Equal(t, errors.New("some sql error"), err)
 
 		err = mockDB.ExpectationsWereMet()
 		assert.NoError(t, err)
