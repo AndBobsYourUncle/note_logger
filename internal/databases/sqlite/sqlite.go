@@ -27,6 +27,11 @@ CREATE INDEX IF NOT EXISTS created_at_index
 ON notes(created_at);
 `
 
+const createIndexForNoteContent string = `
+CREATE INDEX notes_content 
+ON notes(content);
+`
+
 type migration struct {
 	migrationName  string
 	migrationQuery string
@@ -35,6 +40,7 @@ type migration struct {
 var migrations = []migration{
 	{migrationName: "create notes table", migrationQuery: createTableIfNotExistsQuery},
 	{migrationName: "add notes created_at index", migrationQuery: createIndexIfNotExistsQuery},
+	{migrationName: "add note content index", migrationQuery: createIndexForNoteContent},
 }
 
 func New(ctx context.Context) (*sql.DB, error) {
