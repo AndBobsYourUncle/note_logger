@@ -20,25 +20,21 @@ var addNoteCommand = &cobra.Command{
 
 		noteLine, err := cmd.Flags().GetString("content")
 		if err != nil {
-			cmd.PrintErr(err)
 			return err
 		}
 
 		if noteLine == "" {
 			err := errors.New("note content required")
-			cmd.PrintErr(err)
 			return err
 		}
 
 		sqliteDB, err := sqlite.New(ctx)
 		if err != nil {
-			cmd.PrintErr(err)
 			return err
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
-			cmd.PrintErr(err)
 			return err
 		}
 
@@ -46,7 +42,6 @@ var addNoteCommand = &cobra.Command{
 			Content: noteLine,
 		})
 		if err != nil {
-			cmd.PrintErr(err)
 			return err
 		}
 

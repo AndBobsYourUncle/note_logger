@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
 )
 
@@ -10,8 +8,12 @@ var rootCommand = &cobra.Command{
 	Use: "note-logger",
 }
 
-func Execute() {
+func Execute() error {
+	rootCommand.SilenceUsage = true
+
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }

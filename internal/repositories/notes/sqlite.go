@@ -17,7 +17,11 @@ INSERT INTO notes (content, created_at) VALUES(?,?)asdf;
 `
 
 const listBetweenQuery string = `
-SELECT * FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
+SELECT id, content, created_at FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
+`
+
+const noteExistsQuery string = `
+SELECT id FROM notes WHERE id = ?
 `
 
 const deleteNoteQuery string = `
@@ -51,7 +55,7 @@ func NewRepository(cfg *Config) (Repository, error) {
 func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entities.Note, error) {
 	note.CreatedAt = repo.clock.Now()
 
-	res, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.CreatedAt, note.Content)
+	res, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.Content, note.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -78,10 +82,10 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 
 	for rows.Next() {
 		var id int64
-		var createdAt time.Time
 		var content string
+		var createdAt time.Time
 
-		err = rows.Scan(&id, &createdAt, &content)
+		err = rows.Scan(&id, &content, &createdAt)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +101,16 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 }
 
 func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
-	_, err := repo.dbConn.ExecContext(ctx, deleteNoteQuery, noteID)
+	row := repo.dbConn.QueryRowContext(ctx, noteExistsQuery, noteID)
+
+	var id int64
+
+	err := row.Scan(&id)
+	if err != nil {
+		return errors.New("note does not exist")
+	}
+
+	_, err = repo.dbConn.ExecContext(ctx, deleteNoteQuery, noteID)
 	if err != nil {
 		return err
 	}
