@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"log"
 	"note-logger/internal/databases/sqlite"
 	"note-logger/internal/repositories/notes"
 
@@ -13,34 +12,42 @@ import (
 var deleteNoteCommand = &cobra.Command{
 	Use:   "delete-note",
 	Short: "Delete an existing note",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		noteID, err := cmd.Flags().GetInt64("id")
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		if noteID == 0 {
-			log.Fatal(errors.New("note ID required"))
+			err := errors.New("note ID required")
+			cmd.PrintErr(err)
+			return err
 		}
 
 		sqliteDB, err := sqlite.New(ctx)
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		err = notesRepo.Delete(ctx, noteID)
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
-		log.Println("Note deleted.")
+		cmd.Println("Note deleted.")
+
+		return nil
 	},
 }
 

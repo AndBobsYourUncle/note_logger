@@ -3,8 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
 	"time"
 
 	"note-logger/internal/databases/sqlite"
@@ -17,55 +15,68 @@ import (
 var listNotesCommand = &cobra.Command{
 	Use:   "list-notes",
 	Short: "Lists the existing notes",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		beginningTimeString, err := cmd.Flags().GetString("start")
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		if beginningTimeString == "" {
-			log.Fatal(errors.New("beginning time required"))
+			err := errors.New("beginning time required")
+			cmd.PrintErr(err)
+			return err
 		}
 
 		endTimeString, err := cmd.Flags().GetString("end")
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		if endTimeString == "" {
-			log.Fatal(errors.New("end time required"))
+			err := errors.New("end time required")
+			cmd.PrintErr(err)
+			return err
 		}
 
 		beginningTime, err := naturaldate.Parse(beginningTimeString, time.Now())
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		endTime, err := naturaldate.Parse(endTimeString, time.Now())
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		sqliteDB, err := sqlite.New(ctx)
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		notesRes, err := notesRepo.ListBetween(ctx, beginningTime, endTime)
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		for _, note := range notesRes {
-			fmt.Printf("%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
+			cmd.Printf("%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
 		}
+
+		return nil
 	},
 }
 
