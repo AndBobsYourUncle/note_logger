@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"log"
-	"note-logger/internal/databases/sqlite"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 
+	"note-logger/internal/databases/sqlite"
+
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -40,24 +42,32 @@ func runCommand(args []string) (string, error) {
 	return output.String(), err
 }
 
-var noteAddedRegex = regexp.MustCompile(`^(\d*) - [\w ]*:\d*:\d*: (.*)`)
+var noteDetailsRegex = regexp.MustCompile(`^(\d*) - [\w ]*:\d*:\d*: (.*)`)
 var noteDeletedRegex = regexp.MustCompile(`Note deleted.`)
 
-func getNoteCreatedDetails(t *testing.T, output string) (int, string) {
+func getNoteDetails(output string) ([]int, []string) {
+	noteIDs := make([]int, 0)
+	noteContents := make([]string, 0)
+
 	actualLines := strings.Split(output, "\n")
 
-	assert.Equal(t, 3, len(actualLines))
-	assert.Equal(t, "", actualLines[len(actualLines)-1])
+	for _, line := range actualLines {
+		matches := noteDetailsRegex.FindAllStringSubmatch(line, -1)
 
-	matches := noteAddedRegex.FindAllStringSubmatch(actualLines[1], -1)
+		if len(matches) > 0 {
+			for i, match := range matches[0] {
+				switch i {
+				case 1:
+					noteID, _ := strconv.Atoi(match)
+					noteIDs = append(noteIDs, noteID)
+				case 2:
+					noteContents = append(noteContents, match)
+				}
+			}
+		}
+	}
 
-	assert.Equal(t, 1, len(matches))
-	assert.Equal(t, 3, len(matches[0]))
-
-	noteID, err := strconv.Atoi(matches[0][1])
-	assert.NoError(t, err)
-
-	return noteID, matches[0][2]
+	return noteIDs, noteContents
 }
 
 func TestIntegration(t *testing.T) {
@@ -70,12 +80,14 @@ func TestIntegration(t *testing.T) {
 		actual, err := runCommand([]string{"add-note", "-c", "this is a new note"})
 		assert.NoError(t, err)
 
-		noteID, contents := getNoteCreatedDetails(t, actual)
+		noteIDs, noteContents := getNoteDetails(actual)
+		require.Equal(t, 1, len(noteIDs))
+		require.Equal(t, 1, len(noteContents))
 
-		assert.Equal(t, 1, noteID)
-		assert.Equal(t, "this is a new note", contents)
+		assert.Equal(t, 1, noteIDs[0])
+		assert.Equal(t, "this is a new note", noteContents[0])
 
-		actual, err = runCommand([]string{"delete-note", "-i", strconv.Itoa(noteID)})
+		actual, err = runCommand([]string{"delete-note", "-i", strconv.Itoa(noteIDs[0])})
 		assert.NoError(t, err)
 
 		assert.Regexp(t, noteDeletedRegex, actual)
