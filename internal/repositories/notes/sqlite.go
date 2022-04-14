@@ -103,7 +103,9 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 func (repo *sqliteRepo) Delete(ctx context.Context, noteID int64) error {
 	row := repo.dbConn.QueryRowContext(ctx, noteExistsQuery, noteID)
 
-	err := row.Scan()
+	var id int64
+
+	err := row.Scan(&id)
 	if err != nil {
 		return errors.New("note does not exist")
 	}

@@ -65,7 +65,7 @@ func (s *testSuite) TestNotesRepo_Create_Success() {
 	s.mockClock.EXPECT().Now().Return(createdAt)
 
 	s.mockDB.ExpectExec(regexp.QuoteMeta(insertNoteQuery)).
-		WithArgs(createdAt, expectedNote.Content).WillReturnResult(sqlmock.NewResult(5, 1))
+		WithArgs(expectedNote.Content, createdAt).WillReturnResult(sqlmock.NewResult(5, 1))
 
 	res, err := s.repoFixture.Create(s.ctx, newNote)
 
@@ -92,10 +92,10 @@ func (s *testSuite) TestNotesRepo_ListBetween_Success() {
 		},
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "created_at", "content"}).
-		AddRow(expectedNotes[0].ID, expectedNotes[0].CreatedAt, expectedNotes[0].Content).
-		AddRow(expectedNotes[1].ID, expectedNotes[1].CreatedAt, expectedNotes[1].Content).
-		AddRow(expectedNotes[2].ID, expectedNotes[2].CreatedAt, expectedNotes[2].Content)
+	rows := sqlmock.NewRows([]string{"id", "content", "created_at"}).
+		AddRow(expectedNotes[0].ID, expectedNotes[0].Content, expectedNotes[0].CreatedAt).
+		AddRow(expectedNotes[1].ID, expectedNotes[1].Content, expectedNotes[1].CreatedAt).
+		AddRow(expectedNotes[2].ID, expectedNotes[2].Content, expectedNotes[2].CreatedAt)
 
 	startTime := time.Unix(1649707678, 0).UTC()
 	endTime := time.Unix(1649807678, 0).UTC()
@@ -109,6 +109,10 @@ func (s *testSuite) TestNotesRepo_ListBetween_Success() {
 }
 
 func (s *testSuite) TestNotesRepo_Delete_Success() {
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(100)
+
+	s.mockDB.ExpectQuery(regexp.QuoteMeta(noteExistsQuery)).WithArgs(int64(100)).WillReturnRows(rows)
+
 	s.mockDB.ExpectExec(regexp.QuoteMeta(deleteNoteQuery)).WithArgs(int64(100)).WillReturnResult(sqlmock.NewResult(100, 1))
 
 	err := s.repoFixture.Delete(s.ctx, int64(100))
