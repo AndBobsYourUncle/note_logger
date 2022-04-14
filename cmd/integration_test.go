@@ -92,4 +92,40 @@ func TestIntegration(t *testing.T) {
 
 		assert.Regexp(t, noteDeletedRegex, actual)
 	})
+
+	t.Run("adds a few notes and then lists them, then cleans up", func(t *testing.T) {
+		_, err := runCommand([]string{"add-note", "-c", "note #1"})
+		assert.NoError(t, err)
+
+		_, err = runCommand([]string{"add-note", "-c", "note #2"})
+		assert.NoError(t, err)
+
+		_, err = runCommand([]string{"add-note", "-c", "note #3"})
+		assert.NoError(t, err)
+
+		actual, err := runCommand([]string{"list-notes", "-s", "10 minutes ago", "-e", "now"})
+		assert.NoError(t, err)
+
+		noteIDs, noteContents := getNoteDetails(actual)
+		require.Equal(t, 3, len(noteIDs))
+		require.Equal(t, 3, len(noteContents))
+
+		assert.Equal(t, 1, noteIDs[0])
+		assert.Equal(t, "note #1", noteContents[0])
+
+		assert.Equal(t, 2, noteIDs[1])
+		assert.Equal(t, "note #2", noteContents[1])
+
+		assert.Equal(t, 3, noteIDs[2])
+		assert.Equal(t, "note #3", noteContents[2])
+
+		_, err = runCommand([]string{"delete-note", "-i", strconv.Itoa(noteIDs[0])})
+		assert.NoError(t, err)
+
+		_, err = runCommand([]string{"delete-note", "-i", strconv.Itoa(noteIDs[1])})
+		assert.NoError(t, err)
+
+		_, err = runCommand([]string{"delete-note", "-i", strconv.Itoa(noteIDs[2])})
+		assert.NoError(t, err)
+	})
 }
