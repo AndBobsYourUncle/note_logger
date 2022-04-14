@@ -38,14 +38,10 @@ var migrations = []migration{
 }
 
 func New(ctx context.Context) (*sql.DB, error) {
-	ex, err := os.Executable()
+	filename, err := DBFilename()
 	if err != nil {
 		return nil, err
 	}
-
-	exPath := filepath.Dir(ex)
-
-	filename := exPath + "/" + dbFile
 
 	err = touchDBFile(filename)
 	if err != nil {
@@ -121,6 +117,17 @@ func execMigration(ctx context.Context, db *sql.DB, migrationNum int) error {
 	}
 
 	return nil
+}
+
+func DBFilename() (string, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	exPath := filepath.Dir(ex)
+
+	return exPath + "/" + dbFile, nil
 }
 
 func touchDBFile(filename string) error {

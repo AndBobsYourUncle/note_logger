@@ -3,8 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
 	"note-logger/internal/databases/sqlite"
 	"time"
 
@@ -17,36 +15,44 @@ import (
 var addNoteCommand = &cobra.Command{
 	Use:   "add-note",
 	Short: "Add a new note",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		noteLine, err := cmd.Flags().GetString("content")
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		if noteLine == "" {
-			log.Fatal(errors.New("note content required"))
+			err := errors.New("note content required")
+			cmd.PrintErr(err)
+			return err
 		}
 
 		sqliteDB, err := sqlite.New(ctx)
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		notesRepo, err := notes.NewRepository(&notes.Config{DB: sqliteDB})
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
 		note, err := notesRepo.Create(ctx, &entities.Note{
 			Content: noteLine,
 		})
 		if err != nil {
-			log.Fatal(err)
+			cmd.PrintErr(err)
+			return err
 		}
 
-		fmt.Printf("Note added:\n%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
+		cmd.Printf("Note added:\n%v - %v: %v\n", note.ID, note.CreatedAt.Format(time.Stamp), note.Content)
+
+		return nil
 	},
 }
 
