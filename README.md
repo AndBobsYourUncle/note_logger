@@ -118,3 +118,6 @@ var migrations = []migration{
 Migrations are run within a transaction, and any error results in a rollback. On any execution of the app, it checks the internal `pragma` setting, and if it is behind, it runs each migration in order to reach the required migration number.
 
 Any migrations that might result in an error should get caught in the integration tests that run, as it starts with a fresh DB every time.
+
+Here's a sample PR that adds a new index on the content column in the notes table:
+https://github.com/AndBobsYourUncle/note_logger/pull/2
