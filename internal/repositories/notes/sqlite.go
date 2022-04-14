@@ -17,7 +17,7 @@ INSERT INTO notes (content, created_at) VALUES(?,?);
 `
 
 const listBetweenQuery string = `
-SELECT * FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
+SELECT id, content, created_at FROM notes WHERE created_at >= ? AND created_at <= ? ORDER BY created_at ASC
 `
 
 const deleteNoteQuery string = `
@@ -51,7 +51,7 @@ func NewRepository(cfg *Config) (Repository, error) {
 func (repo *sqliteRepo) Create(ctx context.Context, note *entities.Note) (*entities.Note, error) {
 	note.CreatedAt = repo.clock.Now()
 
-	res, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.CreatedAt, note.Content)
+	res, err := repo.dbConn.ExecContext(ctx, insertNoteQuery, note.Content, note.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -78,10 +78,10 @@ func (repo *sqliteRepo) ListBetween(ctx context.Context, startTime time.Time, en
 
 	for rows.Next() {
 		var id int64
-		var createdAt time.Time
 		var content string
+		var createdAt time.Time
 
-		err = rows.Scan(&id, &createdAt, &content)
+		err = rows.Scan(&id, &content, &createdAt)
 		if err != nil {
 			return nil, err
 		}
