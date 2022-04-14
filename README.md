@@ -97,3 +97,24 @@ With this, adding a note can be as simple as typing this in your terminal:
 ```bash
 note Here is a new note!
 ```
+
+## Contributing
+
+Contributions are definitely welcome, so feel free to open a PR adding whatever new functionality you might like.
+
+### DB Migrations
+
+Database migrations are handled in the database migration wrapper here:
+[sqlite.go](https://github.com/AndBobsYourUncle/note_logger/blob/master/internal/databases/sqlite/sqlite.go)
+
+Adding a migration is as simple as adding an element to the migrations array:
+```go
+var migrations = []migration{
+  {migrationName: "create notes table", migrationQuery: createTableIfNotExistsQuery},
+  {migrationName: "add notes created_at index", migrationQuery: createIndexIfNotExistsQuery},
+}
+```
+
+Migrations are run within a transaction, and any error results in a rollback. On any execution of the app, it checks the internal `pragma` setting, and if it is behind, it runs each migration in order to reach the required migration number.
+
+Any migrations that might result in an error should get caught in the integration tests that run, as it starts with a fresh DB every time.
