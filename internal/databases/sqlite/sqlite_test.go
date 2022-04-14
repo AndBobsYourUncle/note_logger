@@ -23,38 +23,18 @@ func TestSQLite_Migrate(t *testing.T) {
 
 		mockDB.ExpectQuery(regexp.QuoteMeta(getCurrentMigration)).WillReturnRows(rows)
 
-		mockDB.ExpectBegin()
+		for i := 1; i <= len(migrations); i++ {
+			mockDB.ExpectBegin()
 
-		mockDB.ExpectExec(regexp.QuoteMeta(createTableIfNotExistsQuery)).
-			WillReturnResult(sqlmock.NewResult(1, 1))
+			mockDB.ExpectExec(regexp.QuoteMeta(migrations[i-1].migrationQuery)).
+				WillReturnResult(sqlmock.NewResult(1, 1))
 
-		setQuery := strings.Replace(setCurrentMigration, "?", strconv.Itoa(1), 1)
+			setQuery := strings.Replace(setCurrentMigration, "?", strconv.Itoa(i), 1)
 
-		mockDB.ExpectExec(regexp.QuoteMeta(setQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
+			mockDB.ExpectExec(regexp.QuoteMeta(setQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
 
-		mockDB.ExpectCommit()
-
-		mockDB.ExpectBegin()
-
-		mockDB.ExpectExec(regexp.QuoteMeta(createIndexIfNotExistsQuery)).
-			WillReturnResult(sqlmock.NewResult(1, 1))
-
-		setQuery = strings.Replace(setCurrentMigration, "?", strconv.Itoa(2), 1)
-
-		mockDB.ExpectExec(regexp.QuoteMeta(setQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-		mockDB.ExpectCommit()
-
-		mockDB.ExpectBegin()
-
-		mockDB.ExpectExec(regexp.QuoteMeta(createIndexForNoteContent)).
-			WillReturnResult(sqlmock.NewResult(1, 1))
-
-		setQuery = strings.Replace(setCurrentMigration, "?", strconv.Itoa(3), 1)
-
-		mockDB.ExpectExec(regexp.QuoteMeta(setQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-		mockDB.ExpectCommit()
+			mockDB.ExpectCommit()
+		}
 
 		err = migrate(ctx, db)
 		assert.NoError(t, err)
@@ -92,16 +72,16 @@ func TestSQLite_Migrate(t *testing.T) {
 		db, mockDB, err := sqlmock.New()
 		assert.NoError(t, err)
 
-		rows := sqlmock.NewRows([]string{"user_version"}).AddRow(2)
+		rows := sqlmock.NewRows([]string{"user_version"}).AddRow(len(migrations) - 1)
 
 		mockDB.ExpectQuery(regexp.QuoteMeta(getCurrentMigration)).WillReturnRows(rows)
 
 		mockDB.ExpectBegin()
 
-		mockDB.ExpectExec(regexp.QuoteMeta(createIndexForNoteContent)).
+		mockDB.ExpectExec(regexp.QuoteMeta(migrations[len(migrations)-1].migrationQuery)).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		setQuery := strings.Replace(setCurrentMigration, "?", strconv.Itoa(3), 1)
+		setQuery := strings.Replace(setCurrentMigration, "?", strconv.Itoa(len(migrations)), 1)
 
 		mockDB.ExpectExec(regexp.QuoteMeta(setQuery)).WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -120,7 +100,7 @@ func TestSQLite_Migrate(t *testing.T) {
 		db, mockDB, err := sqlmock.New()
 		assert.NoError(t, err)
 
-		rows := sqlmock.NewRows([]string{"user_version"}).AddRow(3)
+		rows := sqlmock.NewRows([]string{"user_version"}).AddRow(len(migrations))
 
 		mockDB.ExpectQuery(regexp.QuoteMeta(getCurrentMigration)).WillReturnRows(rows)
 
